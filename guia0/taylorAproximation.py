@@ -4,14 +4,13 @@ def real(x):
     return 1 / (1 - x)
 
 def taylor(x, limits):
-
     init = 0
-    N_1, N_2 = limits
+    N_1, N_2 = limits ## using limits allows me to generate any part of the serie, not only from the beginning
     for n in range(N_1, N_2+1):
         init += x**(n -1)
     return init      
 
-error = 10**(-8)
+error = 1E-8
 
 print(" {0:<4s} | {1:<10s} | {2:<10s} | {3:<3s}".format("x", "taylor", "real", "N")) #table header
 x_values = [i/100 for i in range(0, 100)]
