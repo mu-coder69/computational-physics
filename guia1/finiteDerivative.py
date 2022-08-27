@@ -40,14 +40,16 @@ newton_root, newton_error = newton(exact_function, b)
 print(f"newton root: {newton_root}")
 
 
-plt.loglog(range(0, len(bisection_error)), bisection_error / max(bisection_error), 
+plt.loglog(range(0, len(bisection_error)), 
+            bisection_error / max(bisection_error), 
             color="red", 
             label="Bisection method", 
             marker="o", 
             markersize=3,
             linestyle="dashed",
             linewidth=0.7)
-plt.loglog(range(0, len(newton_error)), newton_error / max(newton_error), 
+plt.loglog(range(0, len(newton_error)), 
+            newton_error / max(newton_error), 
             color="blue", 
             label="newton-raphson method", 
             marker="o", 
