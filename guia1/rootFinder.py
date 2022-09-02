@@ -31,7 +31,8 @@ def bisection(f, interval, error=1E-8):
         interval_error.append(abs(a-b))
 
     return abs(a+b)/2, interval_error
-
+    
+""" 
 b = 20
 limits = np.array([0, b])
 bisection_root, bisection_error = bisection(exact_function, limits)
@@ -58,4 +59,4 @@ plt.loglog(range(0, len(newton_error)),
             linewidth=0.7)
 plt.legend()
 plt.show()
-
+ """
