@@ -13,6 +13,7 @@ def V(r: float, derivative=False) -> float:
 
 r = np.linspace(0, 1, 100)[1:]
 root = bisection(lambda r: V(r, derivative=True), (r[0], r[-1]))[0]
+print(f"Equilibrium radius : {root}")
 
 plt.grid(True, linewidth=0.7, color="darkgray")
 plt.plot(r, V(r), label="Potential")
