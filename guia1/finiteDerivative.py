@@ -13,7 +13,6 @@ h = np.array([10**(-i) for i in np.arange(0.1, 12, 0.1)])
 y = lambda x: np.sin(x)
 exact = lambda x: np.cos(x)
 
-
 a = np.pi/2
 b = np.pi/3
 
