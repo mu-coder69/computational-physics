@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.misc import derivative
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 def exact_function(x):
@@ -8,11 +8,14 @@ def exact_function(x):
 
 
 def newton(f, x_0, error=1E-8):
+    a = x_0
+    b = 0
     f_values = []
-    while abs(f(x_0)) > error:
-        f_values.append(abs(f(x_0)))
-        x_0 -= f(x_0) / derivative(f, x_0)
-    return x_0, f_values
+    while abs(a - b) > error:
+        b = a
+        a = b - f(b) / derivative(f, b, dx=1E-6)
+        f_values.append(abs(a - b))
+    return a, np.array(f_values)
     
 
 def bisection(f, interval, error=1E-8):
@@ -32,17 +35,17 @@ def bisection(f, interval, error=1E-8):
 
     return abs(a+b)/2, interval_error
     
-""" 
+
 b = 20
-limits = np.array([0, b])
+limits = np.array([0.1, b])
 bisection_root, bisection_error = bisection(exact_function, limits)
 print(f"bisected root: {bisection_root}")
-newton_root, newton_error = newton(exact_function, b)
+newton_root, newton_error = newton(exact_function, 0.1)
 print(f"newton root: {newton_root}")
 
 
 plt.loglog(range(0, len(bisection_error)), 
-            bisection_error / max(bisection_error), 
+            bisection_error, 
             color="red", 
             label="Bisection method", 
             marker="o", 
@@ -50,7 +53,7 @@ plt.loglog(range(0, len(bisection_error)),
             linestyle="dashed",
             linewidth=0.7)
 plt.loglog(range(0, len(newton_error)), 
-            newton_error / max(newton_error), 
+            newton_error, 
             color="blue", 
             label="newton-raphson method", 
             marker="o", 
@@ -59,4 +62,3 @@ plt.loglog(range(0, len(newton_error)),
             linewidth=0.7)
 plt.legend()
 plt.show()
- """

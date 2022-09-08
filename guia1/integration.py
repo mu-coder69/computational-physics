@@ -10,14 +10,17 @@ def trap_int(INTERVAL, f, N=1_000_000, chunk_size=1_000_000, dtype=np.float32):
     for i in range(len(intervals)):
         a, b, terms, endpoint = intervals[i]
         x_values = np.linspace(a, b, terms, endpoint=endpoint, dtype=dtype)
+        # x_values = np.array([a + i*h for i in range(terms)])
         y_values = f(x_values)
-        weights = np.full(len(y_values), h, dtype=dtype)
-        if i == 0:
-            weights[0] = h/2
-        if i == len(intervals) -1:
-            weights[-1] = h/2
-        integral += weights @ y_values.T
-    return integral
+        weights = np.ones(terms, dtype=dtype)/2
+        # if i == 0:
+        #     weights[0] = 1/2
+        # if i == len(intervals) -1:
+        #     weights[-1] = 1/2
+        # weights *= h
+        for j in range(1, terms):
+            integral += y_values[j-1]*weights[j-1] + y_values[j]*weights[j]
+    return integral*h
 
 def simpson_int(INTERVAL, f, N=1_000_000, chunk_size=1_000_000, dtype=np.float32):
     N = N -1 if N % 2 == 0 else N
@@ -28,16 +31,20 @@ def simpson_int(INTERVAL, f, N=1_000_000, chunk_size=1_000_000, dtype=np.float32
     for i in range(len(intervals)):
         a, b, terms, endpoint = intervals[i]
         x_values = np.linspace(a, b, terms, endpoint=endpoint, dtype=dtype)
+        # x_values = np.array([a + i*h for i in range(terms)])
         # x_values = np.arange(a, b, h)
         y_values = f(x_values)
-        weights = np.full(len(y_values), 4*h/3, dtype=dtype)
-        weights[::2] = 2*h/3
-        if i == 0:
-            weights[0] = h/3
-        if i == len(intervals) -1:
-            weights[-1] = h/3
-        integral += weights @ y_values.T
-    return integral
+        weights = np.ones(terms, dtype=dtype)
+        weights[0::2] = 1/3
+        weights[1::2] = 4/3
+        # if i == 0:
+        #     weights[0] = 1/3
+        # if i == len(intervals) -1:
+        #     weights[-1] = 1/3
+        # weights *= h
+        for j in range(1, terms -1, 2):
+            integral += y_values[j-1]*weights[j-1] + y_values[j]*weights[j] + y_values[j+1]*weights[j+1]
+    return integral*h
 
 def chunkify(INTERVAL, N, chunk_size=1_000_000):
     # compute de amount of full chunks needed
@@ -69,33 +76,41 @@ def chunkify(INTERVAL, N, chunk_size=1_000_000):
         intervals.append((a, b, terms, endpoint))
     return intervals
         
-N = tuple(range(3, 10_000_000, 100_000))
+# N = tuple(range(3, 1_000_000, 100_000))
+N = tuple([int(j*10**i) for i in range(1, 7) for j in range(1, 10)])
+
 errors = []
 errors2 = []
 errors3 = []
 errors4 = []
-dtype = np.float32
+dtype = np.float64
 for n in N:
     trap1 = trap_int([0, 1], lambda x: x*x*x*x*x, N=n, dtype=dtype)
-    trap2 = trap_int([0, 1], lambda x: 3*x*x*x, N=n, dtype=dtype)
+    # trap2 = trap_int([0, 1], lambda x: 3*x*x*x, N=n, dtype=dtype)
     simp1 = simpson_int([0, 1], lambda x: x*x*x*x*x, N=n, dtype=dtype)
-    simp2 = simpson_int([0, 1], lambda x: 3*x*x*x, N=n, dtype=dtype)
+    # simp2 = simpson_int([0, 1], lambda x: 3*x*x*x, N=n, dtype=dtype)
     print(f"N: {n}")
-    errors.append(abs(1/6 - trap1))
-    errors2.append(abs(3/4 - trap2))
-    errors3.append(abs(1/6 - simp1))
-    errors4.append(abs(3/4 - simp2))
+    errors.append(abs( (trap1 - 1/6)/(1/6) ))
+    # errors2.append(abs(3/4 - trap2))
+    errors3.append(abs( (simp1 - 1/6)/(1/6) ))
+    # errors4.append(abs(3/4 - simp2))
 errors = errors / max(errors)
-errors2 = errors2 / max(errors2)
+# errors2 = errors2 / max(errors2)
 errors3 = errors3 / max(errors3)
-errors4 = errors4 / max(errors4)
-plt.loglog(N, errors, label="$x^5$", c="k")
-plt.loglog(N, errors2, label="$1/2 x^{-1/2}$", c="k")
-plt.title("Trapeze integral")
-plt.legend()
-plt.show()
-plt.loglog(N, errors3, label="$x^5$", c="r")
-plt.loglog(N, errors4, label="$1/2 x^{-1/2}$", c="r")
-plt.title("Simpson integral")
+# errors4 = errors4 / max(errors4)
+plt.grid()
+
+plt.loglog(N, errors,
+            label="simp2", 
+            marker="o", 
+            markersize=3,
+            linestyle="dashed",
+            linewidth=0.7)
+plt.loglog(N, errors3,
+            label="trap2", 
+            marker="o", 
+            markersize=3,
+            linestyle="dashed",
+            linewidth=0.7)
 plt.legend()
 plt.show()
