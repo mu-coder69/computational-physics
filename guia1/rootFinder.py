@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.misc import derivative
 import matplotlib.pyplot as plt
+plt.rcParams.update({"font.family": "times new roman"})
 
 
 def exact_function(x):
@@ -35,30 +36,33 @@ def bisection(f, interval, error=1E-8):
 
     return abs(a+b)/2, interval_error
     
-
 b = 20
+x_0 = 0.1
 limits = np.array([0.1, b])
 bisection_root, bisection_error = bisection(exact_function, limits)
 print(f"bisected root: {bisection_root}")
-newton_root, newton_error = newton(exact_function, 0.1)
+newton_root, newton_error = newton(exact_function, x_0)
 print(f"newton root: {newton_root}")
 
-
-plt.loglog(range(0, len(bisection_error)), 
+plt.title("Root finder algorithms")
+plt.loglog(range(1, len(bisection_error) +1), 
             bisection_error, 
-            color="red", 
-            label="Bisection method", 
+            color="k", 
+            label=f"Bisection method\ninterval [0.1, {b}]", 
             marker="o", 
             markersize=3,
             linestyle="dashed",
             linewidth=0.7)
-plt.loglog(range(0, len(newton_error)), 
+plt.loglog(range(1, len(newton_error) +1), 
             newton_error, 
-            color="blue", 
-            label="newton-raphson method", 
+            color="gray", 
+            label=f"newton-raphson method\n$x_0 = ${x_0}", 
             marker="o", 
             markersize=3,
             linestyle="dashed",
             linewidth=0.7)
+plt.xlabel("Iterations")
+plt.ylabel("|Error|")
 plt.legend()
+# plt.savefig("newton.jpg", dpi=300)
 plt.show()
