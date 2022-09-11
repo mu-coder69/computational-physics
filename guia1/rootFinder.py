@@ -3,7 +3,6 @@ from scipy.misc import derivative
 import matplotlib.pyplot as plt
 plt.rcParams.update({"font.family": "times new roman"})
 
-
 def exact_function(x):
     return np.exp(x)*np.log(x) - x**2
 
@@ -35,34 +34,41 @@ def bisection(f, interval, error=1E-8):
         interval_error.append(abs(a-b))
 
     return abs(a+b)/2, interval_error
-    
-b = 20
-x_0 = 0.1
+
+plt.hlines(1E-8, 1, 60, linestyles="dashed", color="gray")
+b = 50
 limits = np.array([0.1, b])
 bisection_root, bisection_error = bisection(exact_function, limits)
-print(f"bisected root: {bisection_root}")
-newton_root, newton_error = newton(exact_function, x_0)
-print(f"newton root: {newton_root}")
-
 plt.title("Root finder algorithms")
-plt.loglog(range(1, len(bisection_error) +1), 
+plt.semilogy(range(1, len(bisection_error) +1), 
             bisection_error, 
             color="k", 
-            label=f"Bisection method\ninterval [0.1, {b}]", 
+            label=f"Bisection\n[0.1, {b}]", 
             marker="o", 
             markersize=3,
             linestyle="dashed",
             linewidth=0.7)
-plt.loglog(range(1, len(newton_error) +1), 
-            newton_error, 
-            color="gray", 
-            label=f"newton-raphson method\n$x_0 = ${x_0}", 
-            marker="o", 
-            markersize=3,
-            linestyle="dashed",
-            linewidth=0.7)
+marker = ["^", "s", "D"]
+i = 0
+for x_0 in [0.1, 20, 50]:
+    # x_0 = 0.1
+    # print(f"bisected root: {bisection_root}")
+    newton_root, newton_error = newton(exact_function, x_0)
+    # newton_error /= max(newton_error)
+    # print(f"newton root: {newton_root}")
+    plt.semilogy(range(1, len(newton_error) +1), 
+                newton_error, 
+                color="dimgrey", 
+                label=f"NR \n$x_0 = ${x_0}", 
+                marker=marker[i], 
+                markersize=3,
+                linestyle="dashed",
+                linewidth=0.7)
+    i += 1
 plt.xlabel("Iterations")
 plt.ylabel("|Error|")
-plt.legend()
-# plt.savefig("newton.jpg", dpi=300)
-plt.show()
+plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
+plt.xlim(0, 60)
+plt.text(11, 2E-8, "Minimum error")
+plt.savefig("newton.jpg", bbox_inches="tight", dpi=300)
+# plt.show()
