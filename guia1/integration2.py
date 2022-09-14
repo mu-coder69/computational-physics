@@ -98,7 +98,7 @@ plt.loglog(N, error_simp1,
 #             linestyle="dashed",
 #             linewidth=0.7,
 #             c="gray")
-plt.xlabel("Iterations N")
+plt.xlabel("Intervals N")
 plt.ylabel("|numerical - exact| / |exact|")
 plt.legend()
 plt.savefig("integration.png", dpi=300)
