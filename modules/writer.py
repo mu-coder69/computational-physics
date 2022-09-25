@@ -1,19 +1,54 @@
 import csv
-from os.path import splitext
+import inspect
 from numpy import concatenate
+from os.path import splitext
 
-def write(datax, datay, path=__file__):
-    header = ['x', 'y']
-    data = concatenate([datax, datay], axis=1)
-    with open(splitext(path)[0] + '.csv', 
-              mode='w', 
-              encoding='UTF8',
-              newline='') as f:
+def write(data: list, 
+          header: list=None, 
+          split=False, 
+          keep=0, 
+          path="default") -> None:
+
+    if path == "default":
+        previous_frame = inspect.currentframe().f_back
+        path = inspect.getframeinfo(previous_frame)[0]
+
+    if not split:     
         print("Writing file...")
-        writer = csv.writer(f, delimiter=" ")
-        # write the header
-        writer.writerow(header)
-        # write multiple rows
-        writer.writerows(data)
+        with open(splitext(path)[0] + '.csv', 
+                mode='w', 
+                encoding='UTF8',
+                newline='') as f:
+            writer = csv.writer(f, delimiter=" ")
+            #write header
+            if header is not None:
+                writer.writerow(header)
+            # write selected data
+            writer.writerows(data)
+    else:
+        n_columns = data.shape[1]
+        #get the column to keep
+        column_to_keep = data[:, keep].reshape((-1, 1))
+        print("Writing file...")
+        for i in range(n_columns):
+            if i != keep:
+                with open(splitext(path)[0] + f'{i}.csv', 
+                        mode='w', 
+                        encoding='UTF8',
+                        newline='') as f:
 
-        print("File created succesfully!")
+                    print(f'printing column {i}')
+                    writer = csv.writer(f, delimiter=" ")
+                    #write header
+                    if header is not None:
+                        writer.writerow([header[keep], header[i]])
+                    #split data
+                    new_data = data[:, i].reshape((-1, 1))
+                    temp_data = concatenate((column_to_keep, new_data), axis=1)
+                    # write selected data
+                    writer.writerows(temp_data)
+
+    print("File created succesfully!")
+
+def optimize(data: list, keep_each=2) -> list:
+    return data[0::keep_each]

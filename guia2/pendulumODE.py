@@ -1,6 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from modules.ODEsolver import RK4
+import modules.writer as w
 
 
 def pendulum(t_interval: list, init_cond: list, params: list, h=1E-3) -> list:
@@ -26,7 +26,7 @@ def pendulum(t_interval: list, init_cond: list, params: list, h=1E-3) -> list:
     return np.array([t, pos, vel, energy])
 
 def get_energy(vel, pos):
-    return vel**2/2 - np.cos(pos)
+    return vel**2/2 - 9.81**2*np.cos(pos)
 
 def pendulum_eqs(t, y, B=0, W=1, F=0):
     o, p = y
@@ -36,20 +36,23 @@ def pendulum_eqs(t, y, B=0, W=1, F=0):
 
 pos_0 = 0.1
 vel_0 = 0 
-B = 0
-W = 0
-F = 0
+B = 0.5
+W = 2/3
+F = 0.9
 t_interval = (0, 100)
 init_cond = (pos_0, vel_0)
 params = (B, W, F)
 
-system = pendulum(t_interval, init_cond, params)
-plt.subplot(211)
-plt.plot(system[0], system[1])
-plt.plot(system[0], pos_0*np.cos(system[0]))
-plt.hlines(0, plt.xlim()[0], plt.xlim()[1], color='k', linestyles="dashed")
-plt.subplot(212)
-plt.plot(system[0], abs( system[1] - pos_0*np.cos(system[0]) ) )
-print(f"Total error: {sum(abs( system[1] - pos_0*np.cos(system[0]) ))}")
+system = pendulum(t_interval, init_cond, params, h=1E-2)
+system = w.optimize(system)
+headers = ['time', 'pos', 'vel', 'energy']
+w.write(system.T, headers, split=True, keep=1)
+# plt.subplot(211)
+# plt.plot(system[0], system[1])
+# plt.plot(system[0], pos_0*np.cos(system[0]))
+# plt.hlines(0, plt.xlim()[0], plt.xlim()[1], color='k', linestyles="dashed")
+# plt.subplot(212)
+# plt.semilogy(system[0], abs( system[1] - pos_0*np.cos(system[0]) ) )
+# print(f"Total error: {sum(abs( system[1] - pos_0*np.cos(system[0]) ))}")
 # plt.savefig("posTime.png", dpi=300)
-plt.show()
+# plt.show()
