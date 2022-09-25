@@ -1,6 +1,7 @@
 import numpy as np
 from modules.ODEsolver import RK4
 import modules.writer as w
+from os.path import basename
 
 
 def pendulum(t_interval: list, init_cond: list, params: list, h=1E-3) -> list:
@@ -34,25 +35,23 @@ def pendulum_eqs(t, y, B=0, W=1, F=0):
     dpdt = -B*p - np.sin(o) + F*np.cos(W*t)
     return np.array([dodt, dpdt])
 
-pos_0 = 0.1
+pos_0 = np.pi/2
 vel_0 = 0 
 B = 0.5
 W = 2/3
-F = 0.9
+F = [0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6]
 t_interval = (0, 100)
 init_cond = (pos_0, vel_0)
-params = (B, W, F)
+# params = (B, W, F)
 
-system = pendulum(t_interval, init_cond, params, h=1E-2)
-system = w.optimize(system.T)
-headers = ['time', 'pos', 'vel', 'energy']
-w.write(system, headers, split=True, keep=1)
-# plt.subplot(211)
-# plt.plot(system[0], system[1])
-# plt.plot(system[0], pos_0*np.cos(system[0]))
-# plt.hlines(0, plt.xlim()[0], plt.xlim()[1], color='k', linestyles="dashed")
-# plt.subplot(212)
-# plt.semilogy(system[0], abs( system[1] - pos_0*np.cos(system[0]) ) )
-# print(f"Total error: {sum(abs( system[1] - pos_0*np.cos(system[0]) ))}")
-# plt.savefig("posTime.png", dpi=300)
-# plt.show()
+for i in range(len(F)):
+    params = (B, W, F[i])
+    system = pendulum(t_interval, init_cond, params, h=1E-2)
+    system = w.optimize(system.T, 16)
+    headers = ['time', 'pos', 'vel', 'energy']
+    w.write(system, 
+            name='pendulumODE' + f'({F[i]})', 
+            header=headers, 
+            split=True, 
+            keep=1, 
+            path=r'C:\Users\luciano\Documents\GitHub\computational-physics\guia2\data')

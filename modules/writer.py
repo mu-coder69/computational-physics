@@ -1,10 +1,11 @@
 import csv
 import inspect
 from numpy import concatenate
-from os.path import splitext
+from os.path import splitext, dirname
 
 def write(data: list, 
-          header: list=None, 
+          header: list=None,
+          name="default", 
           split=False, 
           keep=0, 
           path="default") -> None:
@@ -12,10 +13,17 @@ def write(data: list,
     if path == "default":
         previous_frame = inspect.currentframe().f_back
         path = inspect.getframeinfo(previous_frame)[0]
+    else:
+        path = path + '\\' 
+
+    if name == "default":
+        name = splitext(path)[0]
+    else:
+        name = dirname(path) + "\\" + name
 
     if not split:     
         print("Writing file...")
-        with open(splitext(path)[0] + '.csv', 
+        with open(name + '.csv', 
                 mode='w', 
                 encoding='UTF8',
                 newline='') as f:
@@ -32,7 +40,7 @@ def write(data: list,
         print("Writing file...")
         for i in range(n_columns):
             if i != keep:
-                with open(splitext(path)[0] + f'{i}.csv', 
+                with open(name + f'{i}.csv', 
                         mode='w', 
                         encoding='UTF8',
                         newline='') as f:
