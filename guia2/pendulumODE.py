@@ -44,9 +44,9 @@ init_cond = (pos_0, vel_0)
 params = (B, W, F)
 
 system = pendulum(t_interval, init_cond, params, h=1E-2)
-system = w.optimize(system)
+system = w.optimize(system.T)
 headers = ['time', 'pos', 'vel', 'energy']
-w.write(system.T, headers, split=True, keep=1)
+w.write(system, headers, split=True, keep=1)
 # plt.subplot(211)
 # plt.plot(system[0], system[1])
 # plt.plot(system[0], pos_0*np.cos(system[0]))

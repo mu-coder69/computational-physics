@@ -51,4 +51,4 @@ def write(data: list,
     print("File created succesfully!")
 
 def optimize(data: list, keep_each=2) -> list:
-    return data[0::keep_each]
+    return data[0::keep_each, :]
