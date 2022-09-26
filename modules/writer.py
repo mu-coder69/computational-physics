@@ -60,3 +60,6 @@ def write(data: list,
 
 def optimize(data: list, keep_each=2) -> list:
     return data[0::keep_each, :]
+
+def dump(data: list, first: int) -> list:
+    return data[first+1:, :]
