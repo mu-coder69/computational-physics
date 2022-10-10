@@ -1,34 +1,29 @@
 import numpy as np
 from modules.ODEsolver import RK4
 import modules.writer as w
-
+from time import perf_counter, localtime, strftime
 
 def pendulum(t_interval: list, init_cond: list, params: list, h=1E-3) -> list:
     t_0, max_time = t_interval
     pos_0, vel_0 = init_cond
     B, W, F = params
-    t = np.array([t_0])
-    pos = np.array([pos_0])
-    vel = np.array([vel_0])
-    acc = np.array([W])
-    energy = np.array([get_energy(vel_0, pos_0)])
-    # acc = np.array([acc_0])
-    sys_vector = np.array([pos[-1], vel[-1], acc[-1]])
-    while t[-1] < max_time:
+    t = np.arange(t_0, max_time, h)
+    pos = pos_0 * np.ones(int((max_time - t_0)/h))
+    vel = vel_0 * np.ones(int((max_time - t_0)/h))
+    acc = W * np.ones(int((max_time - t_0)/h))
+    sys_vector = np.array([pos_0, vel_0, acc[0]])
+    for i in range(1, int((max_time - t_0)/h)):
         sys_vector = RK4(sys_vector, 
-                         lambda y: pendulum_eqs(y, B, W, F))
+                        lambda y: pendulum_eqs(y, B, W, F),
+                        h)
 
         if sys_vector[0] < -np.pi:
             sys_vector[0] += 2*np.pi
         elif sys_vector[0] > np.pi:
             sys_vector[0] -= 2*np.pi
-        pos_n, vel_n, acc_n = sys_vector
-        t = np.append(t, t[-1] +h)
-        pos = np.append(pos, pos_n)
-        vel = np.append(vel, vel_n)
-        acc = np.append(acc, acc_n)
-        energy = np.append(energy, get_energy(vel_n, pos_n))
-    return np.array([t, pos, vel, energy])
+
+        pos[i], vel[i], _ = sys_vector
+    return np.array([t, pos, vel])
 
 def get_energy(vel, pos):
     return vel**2/2 - 9.81**2*np.cos(pos)
@@ -40,26 +35,42 @@ def pendulum_eqs(y, B=0, W=1, F=0):
     domega_dt = W
     return np.array([dtheta_dt, dpsi_dt, domega_dt])
 
-pos_0 = 0.2
-vel_0 = 0 
-B = 0.5
-W = 2/3
-F = [0.9, 1.075, 1.12, 1.2, 1.4, 1.45, 1.47, 1.5, 1.51]
-t_interval = (0, 600)
-init_cond = (pos_0, vel_0)
-# params = (B, W, F)
-step = 16
-dump = int(400/1E-2/step)
+if __name__ == '__main__':
 
-for i in range(len(F)):
-    params = (B, W, F[i])
-    system = pendulum(t_interval, init_cond, params, h=1E-2)
-    system = w.optimize(system.T, step)
-    system = w.dump(system, dump)
+    pos_0 = 0.2
+    vel_0 = 0 
+    B = 0.5
+    W = 2/3
+    F = [0.9, 1.075, 1.12, 1.2, 1.4, 1.45, 1.47, 1.5, 1.51]
+    t_interval = (0, 1_000)
+    init_cond = (pos_0, vel_0)
+
+    import concurrent.futures
+    arguments = np.array([(t_interval, init_cond, (B, W, F[i]), 1E-2) for i  in range(len(F))], dtype=object)
+
+    print(strftime("%Y-%m-%d %H:%M:%S", localtime()))
+    s = perf_counter()
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(pendulum, 
+                            arguments[:, 0],
+                            arguments[:, 1],
+                            arguments[:, 2],
+                            arguments[:, 3])
+    e = perf_counter()
+    print(f'simulation finished || elapsed time: {round(e - s, 2)} s')
+
     headers = ['time', 'pos', 'vel', 'energy']
-    w.write(system, 
-            name='pendulumODE' + f'({F[i]})', 
-            header=headers, 
-            split=True, 
-            keep=1, 
-            path=r'C:\Users\luciano\Documents\GitHub\computational-physics\guia2\data')
+    i = 0
+    for result in results:
+        print(f'file {i}/{len(F)}')
+        result = np.concatenate([result.T, 
+                                get_energy(result[2, :], result[1, :]).reshape(-1, 1)], 
+                                axis=1)
+        w.write(result, 
+                name='pendulumODE' + f'({F[i]})', 
+                header=headers, 
+                split=True, 
+                keep=1, 
+                path=r'C:\Users\luciano\Documents\GitHub\computational-physics\guia2\data\0')
+        i += 1
+
