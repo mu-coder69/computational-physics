@@ -42,7 +42,7 @@ if __name__ == '__main__':
     B = 0.5
     W = 2/3
     F = [0.9, 1.075, 1.12, 1.2, 1.4, 1.45, 1.47, 1.5, 1.51]
-    t_interval = (0, 1_000)
+    t_interval = (0, 10_000)
     init_cond = (pos_0, vel_0)
 
     import concurrent.futures
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     headers = ['time', 'pos', 'vel', 'energy']
     i = 0
     for result in results:
-        print(f'file {i}/{len(F)}')
+        print(f'file {i +1}/{len(F)}')
         result = np.concatenate([result.T, 
                                 get_energy(result[2, :], result[1, :]).reshape(-1, 1)], 
                                 axis=1)
