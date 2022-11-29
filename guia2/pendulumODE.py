@@ -38,18 +38,20 @@ def pendulum_eqs(y, B=0, W=1, F=0):
 
 if __name__ == '__main__':
 
-    e = 1E-3
+    e = 1E-15
     pos_0 = [0.2, 0.2 + e]
     vel_0 = 0 
     B = 0.5
     W = 2/3
-    F = 1.2
+    #F = [1.075, 1.12, 1.4, 1.45, 1.47, 1.5, 1.51]
+    F = 0.9
     t_interval = (0, 5_000)
     # init_cond = (pos_0, vel_0)
 
     import concurrent.futures
+    #arguments = np.array([(t_interval, (pos_0[i], vel_0), (B, W, F[j]), 1E-3) for i  in range(len(pos_0)) for j in range(len(F))], dtype=object)
     arguments = np.array([(t_interval, (pos_0[i], vel_0), (B, W, F), 1E-3) for i  in range(len(pos_0))], dtype=object)
-
+    for arg in arguments: print(arg)
     print(strftime("%Y-%m-%d %H:%M:%S", localtime()))
     s = perf_counter()
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -64,15 +66,15 @@ if __name__ == '__main__':
     headers = ['time', 'pos', 'vel', 'energy']
     i = 0
     for result in results:
-        print(f'file {i +1}/{len(pos_0)}')
-        result = np.concatenate([result.T, 
-                                get_energy(result[2, :], result[1, :]).reshape(-1, 1)], 
-                                axis=1)
-        w.write(result, 
-                name='pendulumODE' + f'({pos_0[i]}-{F})', 
+        print(f'file {i +1}/{len(arguments)}')
+        #result = np.concatenate([result.T, 
+        #                        get_energy(result[2, :], result[1, :]).reshape(-1, 1)], 
+        #                        axis=1)
+        w.write(result.T, 
+                name='pendulumODE' + f'({arguments[i][1][0]}-{arguments[i][2][2]})', 
                 header=headers, 
                 split=True, 
                 keep=1, 
-                path=r'C:\Users\luciano\Documents\GitHub\computational-physics\guia2\data\00')
+                path=r'/home/lucho/Documents/GitHub/computational-physics/guia2/data/00')
         i += 1
 
